@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -f ./complex/client/Dockerfile.dev -t hemant19092/react-test ./complex/client
+
+script:
+  - docker run hemant19092/react-test npm test -- --coverage
+
+after-success:
+  - docker build -t hemant19092/multi-client ./complex/client
+  - docker build -t hemant19092/multi-nginx ./complex/nginx
+  - docker build -t hemant19092/multi-server ./complex/server
+  - docker build -t hemant19092/multi-worker ./complex/worker
+
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+  - docker push hemant19092/multi-client
+  - docker push hemant19092/multi-nginx 
+  - docker push hemant19092/multi-server
+  - docker push hemant19092/multi-worker
